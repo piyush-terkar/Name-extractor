@@ -1,14 +1,19 @@
 let goBtn = document.querySelector("button");
 let startpg = document.querySelector("#Start");
 let endpg = document.querySelector("#End");
+let all_results = [];
 
-function send(message) {
-  chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-    var activeTab = tabs[0];
-    chrome.tabs.sendMessage(activeTab.id, message);
+function goToUrl(tab, url) {
+  chrome.tabs.update(tab.id, { url });
+  return new Promise((resolve) => {
+    chrome.tabs.onUpdated.addListener(function onUpdated(tabId, info) {
+      if (info.status === "complete") {
+        chrome.tabs.onUpdated.removeListener(onUpdated);
+        resolve();
+      }
+    });
   });
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   goBtn.addEventListener("click", (event) => {
     event.preventDefault();
@@ -22,7 +27,25 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Start page cannot be greater than end page");
       return;
     }
-    send(msg);
-    console.log(msg);
+    chrome.tabs.query({ currentWindow: true, active: true }, async (tabs) => {
+      let activeTab = tabs[0];
+      await goToUrl(
+        activeTab.id,
+        `https://www.linkedin.com/search/results/people/?keywords=data%20science&origin=SWITCH_SEARCH_VERTICAL&page=${msg.Start}&sid=_PO`
+      );
+      for (msg.count; msg.count >= 0; msg.count--) {
+        chrome.tabs.sendMessage(activeTab.id, msg, (response) => {
+          all_results.push(response.res);
+        });
+        await goToUrl(
+          activeTab.id,
+          `https://www.linkedin.com/search/results/people/?keywords=data%20science&origin=SWITCH_SEARCH_VERTICAL&page=${++msg.Start}&sid=_PO`
+        );
+      }
+      chrome.tabs.sendMessage(activeTab.id, {
+        Action: "Output",
+        res: all_results,
+      });
+    });
   });
 });
