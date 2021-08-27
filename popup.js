@@ -1,6 +1,6 @@
-let goBtn = document.querySelector("button");
-let startpg = document.querySelector("#Start");
-let endpg = document.querySelector("#End");
+const goBtn = document.querySelector("button");
+const startpg = document.querySelector("#Start");
+const endpg = document.querySelector("#End");
 let all_results = [];
 
 function updateUrl(tab, url) {
