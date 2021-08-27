@@ -3,7 +3,7 @@ let startpg = document.querySelector("#Start");
 let endpg = document.querySelector("#End");
 let all_results = [];
 
-function goToUrl(tab, url) {
+function updateUrl(tab, url) {
   chrome.tabs.update(tab.id, { url });
   return new Promise((resolve) => {
     chrome.tabs.onUpdated.addListener(function onUpdated(tabId, info) {
@@ -17,34 +17,36 @@ function goToUrl(tab, url) {
 document.addEventListener("DOMContentLoaded", () => {
   goBtn.addEventListener("click", (event) => {
     event.preventDefault();
-    msg = {
+    input = {
       Action: "Extract",
       Start: Number(startpg.value),
       End: Number(endpg.value),
       count: Number(endpg.value) - Number(startpg.value),
     };
-    if (msg.Start > msg.End) {
+    if (input.Start > input.End) {
       alert("Start page cannot be greater than end page");
       return;
     }
+    let oStart = input.Start;
     chrome.tabs.query({ currentWindow: true, active: true }, async (tabs) => {
       let activeTab = tabs[0];
-      await goToUrl(
+      await updateUrl(
         activeTab.id,
-        `https://www.linkedin.com/search/results/people/?keywords=data%20science&origin=SWITCH_SEARCH_VERTICAL&page=${msg.Start}&sid=_PO`
+        `https://www.linkedin.com/search/results/people/?keywords=data%20science&origin=SWITCH_SEARCH_VERTICAL&page=${input.Start}&sid=_PO`
       );
-      for (msg.count; msg.count >= 0; msg.count--) {
-        chrome.tabs.sendMessage(activeTab.id, msg, (response) => {
+      for (input.count; input.count >= 0; input.count--) {
+        chrome.tabs.sendMessage(activeTab.id, input, (response) => {
           all_results.push(response.res);
         });
-        await goToUrl(
+        await updateUrl(
           activeTab.id,
-          `https://www.linkedin.com/search/results/people/?keywords=data%20science&origin=SWITCH_SEARCH_VERTICAL&page=${++msg.Start}&sid=_PO`
+          `https://www.linkedin.com/search/results/people/?keywords=data%20science&origin=SWITCH_SEARCH_VERTICAL&page=${++input.Start}&sid=_PO`
         );
       }
       chrome.tabs.sendMessage(activeTab.id, {
         Action: "Output",
         res: all_results,
+        Start: oStart,
       });
     });
   });

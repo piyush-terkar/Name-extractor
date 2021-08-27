@@ -9,12 +9,11 @@ let extractNames = () => {
   return result;
 };
 
-function showOutput(all_results) {
+function showOutput(all_results, Start) {
   console.clear();
-  let i = 1;
   for (const page of all_results) {
     console.log(
-      `---------------:Names on Page[${i++}] are:--------------------------`
+      `---------------:Names on Page[${Start++}] are:--------------------------`
     );
     for (let j = 0; j < 10; j++) {
       console.log(page[j]);
@@ -30,6 +29,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     };
     sendResponse(msg);
   } else {
-    showOutput(request.res);
+    showOutput(request.res, request.Start);
   }
 });
