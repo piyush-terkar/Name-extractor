@@ -2,6 +2,7 @@ const goBtn = document.querySelector("button");
 const startpg = document.querySelector("#Start");
 const endpg = document.querySelector("#End");
 let all_results = [];
+let all_profiles = [];
 
 function updateUrl(tab, url) {
   chrome.tabs.update(tab.id, { url });
@@ -14,6 +15,27 @@ function updateUrl(tab, url) {
     });
   });
 }
+
+function traverseProfiles(tabId, msg) {
+  return new Promise((resolve) => {
+    chrome.tabs.sendMessage(tabId, msg, async (response) => {
+      all_results.push(response.res);
+      let links = response.links;
+      for (let i = 0; i < 10; i++) {
+        await updateUrl(tabId, links[i]);
+        extractProfiles(tabId, { Action: "ExtractProfile" });
+      }
+      resolve();
+    });
+  });
+}
+
+function extractProfiles(tabId, msg) {
+  chrome.tabs.sendMessage(tabId, msg, (response) => {
+    all_profiles.push(response);
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   goBtn.addEventListener("click", (event) => {
     event.preventDefault();
@@ -35,9 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `https://www.linkedin.com/search/results/people/?keywords=data%20science&origin=SWITCH_SEARCH_VERTICAL&page=${input.Start}&sid=_PO`
       );
       for (input.count; input.count >= 0; input.count--) {
-        chrome.tabs.sendMessage(activeTab.id, input, (response) => {
-          all_results.push(response.res);
-        });
+        await traverseProfiles(activeTab.id, { Action: "Extract" });
         await updateUrl(
           activeTab.id,
           `https://www.linkedin.com/search/results/people/?keywords=data%20science&origin=SWITCH_SEARCH_VERTICAL&page=${++input.Start}&sid=_PO`
@@ -46,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
       chrome.tabs.sendMessage(activeTab.id, {
         Action: "Output",
         res: all_results,
+        profiles: all_profiles,
         Start: oStart,
       });
     });
