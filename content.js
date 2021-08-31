@@ -19,14 +19,20 @@ function ExtractProfile() {
   let expSec = document.querySelector("#experience-section");
   if (expSec) {
     profile.experience = [];
-    let exp = document.querySelectorAll("h3");
-    for (let entry of exp) {
-      profile.experience.push(entry.innerText);
+    let companies = document.querySelectorAll(
+      ".pv-entity__secondary-title.separator"
+    );
+    for (let company of companies) {
+      profile.experience.push(company.parentElement.innerText);
     }
+  } else {
+    profile.experience = "This profile doesn't have experience section";
   }
   let abt = document.querySelector(".pv-about-section");
   if (abt) {
     profile.about = abt.innerText;
+  } else {
+    profile.about = "This profile doesn't have an about section";
   }
   console.clear();
   console.log(profile);
@@ -43,7 +49,6 @@ function showOutput(all_results, Start) {
       console.log(page[j]);
     }
   }
-  alert("Done");
 }
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -60,5 +65,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     for (let profile of request.profiles) {
       console.log(profile);
     }
+    alert("Done");
   }
 });
