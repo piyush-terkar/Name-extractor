@@ -39,6 +39,7 @@ function extractProfiles(tabId, msg) {
 document.addEventListener("DOMContentLoaded", () => {
   goBtn.addEventListener("click", (event) => {
     event.preventDefault();
+    goBtn.disabled = true;
     input = {
       Action: "Extract",
       Start: Number(startpg.value),
