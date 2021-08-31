@@ -3,6 +3,7 @@ let hrefs = [];
 
 let extractNames = () => {
   let names = document.querySelectorAll('[dir="ltr"]');
+  console.clear();
   for (let i = 1; i <= 10; i++) {
     window.scrollBy(0, 500);
     console.log(names[i].firstChild.innerText);
@@ -62,6 +63,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     sendResponse(ExtractProfile());
   } else {
     showOutput(request.res, request.Start);
+    console.log(
+      "----------:Final Result Stored in Array Data Structure (of JSON):----------"
+    );
+    console.log(request.profiles);
+    console.log("----------: Expanded View of Final Result :----------");
     for (let profile of request.profiles) {
       console.log(profile);
     }
